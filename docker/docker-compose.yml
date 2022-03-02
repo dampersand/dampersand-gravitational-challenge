@@ -1,0 +1,9 @@
+services:
+  packetwatch:
+    build: .
+    volumes:
+      - /lib/modules:/lib/modules:ro            #this way we don't have to compile or install headers on startup
+      - /usr/src:/usr/src:ro                    #unnecessary for bpftrace, but allows us to #include stuff for bcc
+      - /sys/kernel/debug:/sys/kernel/debug:ro  #bpftrace makes pretty serious use of debugfs, makes tracepoints and stuff available
+    network_mode: "host"
+    privileged: true                            #I hate this a lot.  Explore a way around this if you have time.
