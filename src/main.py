@@ -5,13 +5,20 @@ from bcc import BPF
 
 #build the necessary BPF.
 program = """
+//TODO: these includes are dependent on the host machine and one of the volume mounts.  They're pretty fragile.
 #include <uapi/linux/bpf.h>
 #include <uapi/linux/if_ether.h>
 #include <uapi/linux/ip.h>
 #include <uapi/linux/tcp.h>
 #include <uapi/linux/in.h>
+#include <config/usb/ohci/little/endian.h>
 
 BPF_PERF_OUTPUT(packets);
+
+struct connInfo {
+  int destPort;
+  int sourceIP;
+};
 
 int getPacket(struct xdp_md *ctx) {
   //NOTE: xdp_md is a struct OF MEMORY ADDRESSES, NOT OF THE ACTUAL DATA.  Remember this when you're tearing your hair out.
@@ -45,10 +52,12 @@ int getPacket(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  int test = tcp->dest;
+  struct connInfo retVal = {};
+  retVal.destPort = ntohs(tcp->dest); //you know the hardest dang part is figuring out what format these variables come in?
+  retVal.sourceIP = 1
 
   //great, now let's do something for real
-  packets.perf_submit(ctx, &test, sizeof(test));
+  packets.perf_submit(ctx, &retVal, sizeof(retVal));
   return XDP_PASS;
 }
 
@@ -63,7 +72,8 @@ b.attach_xdp(ifdev, b.load_func("getPacket", BPF.XDP)) #get to work
 #parse the packets
 def printPacket(cpu, data, size):
   packet = b["packets"].event(data)
-  print(packet)
+  print(packet.destPort)
+  print(packet.sourceIP)
 
 
 
