@@ -5,6 +5,7 @@ from bcc import BPF
 import socket
 import struct
 from datetime import datetime
+from ctypes import c_uint32
 
 #build the necessary BPF.
 program = """
@@ -15,14 +16,16 @@ program = """
 #include <uapi/linux/tcp.h>
 #include <uapi/linux/in.h>
 
-BPF_PERF_OUTPUT(packets);
+BPF_PERF_OUTPUT(packets);   //outputs processed packets
+BPF_HASH(sHitList, __be32); //an array is better, but I'm not going to sit here and re-implement python's "in" operator in C.
 
 struct connInfo {
   int destPort;
   int sourceIP;
+  u64 debug;
 };
 
-int getPacket(struct xdp_md *ctx) {
+int packetWork(struct xdp_md *ctx) {
   //NOTE: xdp_md is a struct OF MEMORY ADDRESSES, NOT OF THE ACTUAL DATA.  Remember this when you're tearing your hair out.
   //data      = the memory address that starts the xdp data
   //data_end  = the memory address at the end of the edp data
@@ -43,6 +46,14 @@ int getPacket(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
+  //if it's ipv4 data and this guy's on the sHitList, drop his packets.
+  int key = ip->saddr;
+  u64 *ipBanned = sHitList.lookup(&key);
+  if (ipBanned) {
+    //printk("dropping this guy"); //DEBUG
+    return XDP_DROP;
+  }
+
   //for now, let's scope down into TCP only.
   if (ip->protocol != IPPROTO_TCP) {
     return XDP_PASS;
@@ -54,47 +65,139 @@ int getPacket(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //spit out useful info, but don't worry about human-readability yet
+  //now we're in business!  We have some tcp data.  Let's ONLY continue on 'syn' (not syn-ack) packets.
+  if (!(tcp->syn) || (tcp->ack)) {
+    return XDP_PASS;
+  }
+
+  //assembleuseful info, but don't worry about human-readability yet
   struct connInfo retVal = {};
   retVal.destPort = tcp->dest;
   retVal.sourceIP = ip->saddr;
 
-  //great, now let's do something for real
+  //send it home
   packets.perf_submit(ctx, &retVal, sizeof(retVal));
   return XDP_PASS;
 }
 
 """
 
-ifdev = "lo" #TODO pass device
+#Hit PORTSCAN_PORT_THRESHOLD ports within PORTSCAN_TIME_THRESHOLD and you're now a scanner
+PORTSCAN_TIME_THRESHOLD = 60 #constant, threshold (in seconds) above which someone is considered port scanning
+PORTSCAN_PORT_THRESHOLD = 3  #constant, threshold (in ports) above which someone is considered port scanning
+
+ifdev = "lo" #global device to listen on #TODO pass device
+callers = {} #list of folks who have called the network stack
+sHitList = [] #scanner hit list, list of source IPs caught port-scanning
 b = BPF(text=program) #TODO consider importing from  a file instead
-b.attach_xdp(ifdev, b.load_func("getPacket", BPF.XDP)) #get to work
+b.attach_xdp(ifdev, b.load_func("packetWork", BPF.XDP)) #get to work
 
 
-#Take all the output from XDP and make it human readable
-def outputWatchLine(cpu, data, size):
-  #get the packet
-  packet = b["packets"].event(data)
+#Spit out the output in a human readable format
+def outputWatchLine(data):
+  print("%-18.9s %-16s %-6s" % (data["hrTime"], data["hrIp"], data["port"]))
 
-  #port comes in network byte order, make it human-readable
-  port = socket.ntohs(packet.destPort)
-
+#Collects a human readable IP from a raw ip32
+def parseIP(ip):
   #IP address comes in network byte order too, but it's 32 bit not 16 bit
   #Also we need to add all the dot notation
-  ip32 = socket.ntohl(packet.sourceIP)
+  ip32 = socket.ntohl(ip)
   ipBytes = struct.pack('!I', ip32)
-  readableIP = socket.inet_ntoa(ipBytes)
+  return socket.inet_ntoa(ipBytes)
 
-  #Get timestamp
-  time = datetime.now().strftime("%H:%M:%S")
-  print("%-18.9s %-16s %-6s" % (time, readableIP, port))
 
+#parses data straight from xdp, spits out a callerData construct
+def parseCallerData(packet):
+  #Get timestamp early, minimize drift from actual packet arrival, store as both datetime and human-readable
+  rawTime = datetime.now()
+  hrTime = rawTime.strftime("%H:%M:%S")
+
+  #port comes in network byte order, make it human-readable.  same with IP, but use our parseIP helper.
+  port = socket.ntohs(packet.destPort)
+  hrIp = parseIP(packet.sourceIP)
+
+  #return all info in a nicely packaged dict
+  retVal = {
+    "time"  : rawTime,
+    "hrTime": hrTime,
+    "ip"    : packet.sourceIP,
+    "hrIp"  : hrIp,
+    "port"  : port
+  }
+  return retVal
+
+#Records a new caller into the caller DB (dict)
+def recordCaller(caller):
+  if caller["ip"] not in callers:
+    callers[caller["ip"]] = [{"time": caller["time"], "port": caller["port"]}]
+
+  else:
+    callers[caller["ip"]].append({"time": caller["time"], "port": caller["port"]})
+
+
+#checks caller list for any scanners, blacklists them.
+#Also cleans up the caller list by removing old call records or deleting scanners from the caller list
+def inspectCallers():
+  global sHitList
+  now = datetime.now()
+  newScanners = []
+  for ip in callers:
+    portsHit = [] #ports that a caller has hit in the last minute
+    removeElements = [] #old call records to be removed
+
+    #Check each of a caller's calls, see if they've been a bit scan-happy
+    for i, call in enumerate(callers[ip]):
+      if (now - call["time"]).seconds > 60:
+        removeElements.append(i)
+      else:
+        portsHit.append(call["port"])
+
+    if len(set(portsHit)) >= 3: #scanner detected #TODO: don't flag our own IPs as scanners
+      sHitList.append(ip)
+      sHitList = list(set(sHitList))
+      newScanners.append(ip)
+
+    else: #not a scanner, remove old call records from largest index to smallest
+      removeElements.sort(reverse=True)
+      for i in removeElements:
+        callers[ip].pop(i)
+
+  #If someone has entered the sHitList, stop storing their data
+  for ip in newScanners:
+    callers.pop(ip, False)
+
+  return newScanners
+
+#alerts XDP of a new set of scanners
+def alertXDP(scanners):
+  for scanner in scanners:
+    print("DEBUG tattling on %s" % parseIP(scanner) )
+    b["sHitList"][c_uint32(scanner)] = c_uint32(1)
+    '''try:
+      b["sHitList"][c_uint32(scanner)] = c_uint32(1)
+    except: #figure out which exception causes a problem here...
+      print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))'''
+
+def processPacket(cpu, xdpData, size):
+  #get data from XDP layer
+  data = b["packets"].event(xdpData)
+
+  #parse and output data
+  callerData = parseCallerData(data)
+  outputWatchLine(callerData)
+
+  #record callers and drop anything older than 1 min, get any new scanners
+  recordCaller(callerData)
+  newScanners = inspectCallers()
+
+  #Tattle to XDP layer about scanners
+  alertXDP(newScanners)
 
 
 
 print("%-18s %-16s %-6s" % ("TIME", "IP", "PORT"))
 try: #if we fail, remove from xdp cuz like be safe okay
-  b["packets"].open_perf_buffer(outputWatchLine)
+  b["packets"].open_perf_buffer(processPacket)
   while True:
     b.perf_buffer_poll()
 
