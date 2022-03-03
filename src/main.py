@@ -22,7 +22,6 @@ BPF_HASH(sHitList, __be32); //an array is better, but I'm not going to sit here 
 struct connInfo {
   int destPort;
   int sourceIP;
-  u64 debug;
 };
 
 int packetWork(struct xdp_md *ctx) {
@@ -70,7 +69,7 @@ int packetWork(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //assembleuseful info, but don't worry about human-readability yet
+  //assemble useful info, but don't worry about human-readability yet
   struct connInfo retVal = {};
   retVal.destPort = tcp->dest;
   retVal.sourceIP = ip->saddr;
@@ -99,7 +98,7 @@ def outputWatchLine(data):
 
 #Collects a human readable IP from a raw ip32
 def parseIP(ip):
-  #IP address comes in network byte order too, but it's 32 bit not 16 bit
+  #IP address comes in network byte order just like port, but it's 32 bit not 16 bit
   #Also we need to add all the dot notation
   ip32 = socket.ntohl(ip)
   ipBytes = struct.pack('!I', ip32)
@@ -172,11 +171,10 @@ def inspectCallers():
 def alertXDP(scanners):
   for scanner in scanners:
     print("DEBUG tattling on %s" % parseIP(scanner) )
-    b["sHitList"][c_uint32(scanner)] = c_uint32(1)
-    '''try:
+    try:
       b["sHitList"][c_uint32(scanner)] = c_uint32(1)
-    except: #figure out which exception causes a problem here...
-      print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))'''
+    except: #TODO figure out which exception causes a problem here...
+      print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))
 
 def processPacket(cpu, xdpData, size):
   #get data from XDP layer
