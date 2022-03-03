@@ -1,6 +1,8 @@
 services:
   packetwatch:
-    build: .
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     volumes:
       - /lib/modules:/lib/modules:ro            #this way we don't have to compile or install headers on startup
       - /usr/src:/usr/src:ro                    #unnecessary for bpftrace, but allows us to #include stuff for bcc
