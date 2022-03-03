@@ -2,6 +2,9 @@
 #TODO ^get rid of that and put it in the dockerfile instead
 
 from bcc import BPF
+import socket
+import struct
+from datetime import datetime
 
 #build the necessary BPF.
 program = """
@@ -11,7 +14,6 @@ program = """
 #include <uapi/linux/ip.h>
 #include <uapi/linux/tcp.h>
 #include <uapi/linux/in.h>
-#include <config/usb/ohci/little/endian.h>
 
 BPF_PERF_OUTPUT(packets);
 
@@ -52,9 +54,10 @@ int getPacket(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
+  //spit out useful info, but don't worry about human-readability yet
   struct connInfo retVal = {};
-  retVal.destPort = ntohs(tcp->dest); //you know the hardest dang part is figuring out what format these variables come in?
-  retVal.sourceIP = 1
+  retVal.destPort = tcp->dest;
+  retVal.sourceIP = ip->saddr;
 
   //great, now let's do something for real
   packets.perf_submit(ctx, &retVal, sizeof(retVal));
@@ -68,17 +71,30 @@ b = BPF(text=program) #TODO consider importing from  a file instead
 b.attach_xdp(ifdev, b.load_func("getPacket", BPF.XDP)) #get to work
 
 
-
-#parse the packets
-def printPacket(cpu, data, size):
+#Take all the output from XDP and make it human readable
+def outputWatchLine(cpu, data, size):
+  #get the packet
   packet = b["packets"].event(data)
-  print(packet.destPort)
-  print(packet.sourceIP)
+
+  #port comes in network byte order, make it human-readable
+  port = socket.ntohs(packet.destPort)
+
+  #IP address comes in network byte order too, but it's 32 bit not 16 bit
+  #Also we need to add all the dot notation
+  ip32 = socket.ntohl(packet.sourceIP)
+  ipBytes = struct.pack('!I', ip32)
+  readableIP = socket.inet_ntoa(ipBytes)
+
+  #Get timestamp
+  time = datetime.now().strftime("%H:%M:%S")
+  print("%-18.9s %-16s %-6s" % (time, readableIP, port))
 
 
 
+
+print("%-18s %-16s %-6s" % ("TIME", "IP", "PORT"))
 try: #if we fail, remove from xdp cuz like be safe okay
-  b["packets"].open_perf_buffer(printPacket)
+  b["packets"].open_perf_buffer(outputWatchLine)
   while True:
     b.perf_buffer_poll()
 
