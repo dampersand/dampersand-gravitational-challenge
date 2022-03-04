@@ -1,8 +1,6 @@
 .PHONY: all build run help
 .DEFAULT_GOAL:= help
 
-all: build run
-
 help:       ## Print this help
 	@echo 'Usage: make <target>'
 	@echo 'Setup or run the Packetwatch tool'
@@ -39,4 +37,5 @@ e2e:        ## Run e2e tests on tester
 	@docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up
 
 clean:      ## Remove all instances of packetwatch and tester from your machine (including images)
-	@docker-compose down --rmi
+	@docker-compose down --rmi all
+	

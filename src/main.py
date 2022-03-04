@@ -13,7 +13,7 @@ IFDEV                   = getenv('PW_IFDEV', "lo")
 WHITELIST_SELF          = getenv('PW_WHITELIST_SELF', 'True').lower() in ('true', '1') #sneaky trick, yes?
 
 #log setup
-logging.basicConfig(stream = stdout, level=logging.INFO)
+logging.basicConfig(stream = stdout, level=logging.INFO, format="%(message)s") #doesn't get simpler than this
 
 #prometheus setup
 start_http_server(PROMETHEUS_PORT)
