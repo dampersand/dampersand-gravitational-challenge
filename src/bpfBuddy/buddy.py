@@ -2,6 +2,7 @@ from pwHelpers import *
 from datetime import datetime
 from bcc import BPF
 from ctypes import c_uint32
+from prometheus_client import Counter
 
 
 #Class for loading OUR bpf code into xdp, then working with it.
@@ -15,6 +16,7 @@ class bpfBuddy:
     self.portThresh = portThresh
     self.timeThresh = timeThresh
     self.ifdev      = ifdev
+    self.connCount  = Counter('conn_count', 'number of new connections')
 
 
   #Loads bpf into an interface via xdp
@@ -85,7 +87,7 @@ class bpfBuddy:
   #blacklists an ip
   #expects to receive an ip32
   def forceBlacklist(self, ip):
-    print("DEBUG tattling on %s" % ip32ToHR(ip) )
+    outputColumns(datetime.now().strftime("%H:%M:%S"), ip32ToHR(ip), "", "Added to blacklist")
     try:
       self.bpf["blacklist"][c_uint32(ip)] = c_uint32(1)
     except:
@@ -94,7 +96,7 @@ class bpfBuddy:
   #whitelists an IP
   #expects to receive an ip32
   def forceWhitelist(self, ip):
-    print("DEBUG whitelisting %s" % ip32ToHR(ip))
+    outputColumns(datetime.now().strftime("%H:%M:%S"), ip32ToHR(ip), "", "Added to whitelist")
     try:
       self.bpf["whitelist"][c_uint32(ip)] = c_uint32(1)
     except:
@@ -103,11 +105,11 @@ class bpfBuddy:
   def process(self, cpu, xdpData, size):
     #get data from XDP layer and tick the prometheus counter
     data = self.bpf["callers"].event(xdpData)
-    #connCount.inc() #TODO this is in a weird place now
+    self.connCount.inc()
 
     #parse and output data
     callerData = self.parseCallerData(data)
-    outputHelper(callerData)
+    outputColumns(callerData["hrTime"], callerData["hrIp"], callerData["port"], "")
 
     #record callers and drop anything older than 1 min, get any new scanners
     self.recordCaller(callerData)
