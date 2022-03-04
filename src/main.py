@@ -2,6 +2,8 @@ from prometheus_client import start_http_server
 from os import getenv
 from bpfBuddy import bpfBuddy
 from pwHelpers import getSelfIPs, ipHRTo32, outputColumns
+import logging
+from sys import stdout
 
 #constants
 PORTSCAN_TIME_THRESHOLD = int(getenv('PW_PORTSCAN_TIME_THRESHOLD', 60))
@@ -9,6 +11,9 @@ PORTSCAN_PORT_THRESHOLD = int(getenv('PW_PORTSCAN_PORT_THRESHOLD', 3)) #Hit PORT
 PROMETHEUS_PORT         = int(getenv('PW_PROMETHEUS_PORT', 9090))
 IFDEV                   = getenv('PW_IFDEV', "lo")
 WHITELIST_SELF          = getenv('PW_WHITELIST_SELF', 'True').lower() in ('true', '1') #sneaky trick, yes?
+
+#log setup
+logging.basicConfig(stream = stdout, level=logging.INFO)
 
 #prometheus setup
 start_http_server(PROMETHEUS_PORT)

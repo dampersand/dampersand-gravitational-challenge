@@ -34,7 +34,6 @@ class e2eTests(unittest.TestCase):
 
   #tests that packetwatch correctly stops a portscan
   def test_packetwatch_deny(self):
-    "packetwatch should stop a portscan"
     requests.get("http://localhost:8086", timeout=1)
     requests.get("http://localhost:8087", timeout=1)
     requests.get("http://localhost:8088", timeout=1)
@@ -75,6 +74,9 @@ try:
 except AssertionError:
   print("Couldn't reach nginx server!  It may be down, or packetwatch may not be honoring port thresholds correctly.")
 
+print("Sleeping for a second so we don't accidentally irritate packetwatch")
+sleep(2)
+
 try:
   print("Performing packetwatch filter test.  Packetwatch should flag me as a portscanner and prevent nginx access.")
   tester.test_packetwatch_deny()
@@ -82,4 +84,4 @@ try:
 except AssertionError:
   print("Was able to reach nginx server!  That's bad, we should have been blocked.  is packetwatch running?")
 
-print("Thus ends our tests.  Restart packetwatch to try again.")
+print("Thus ends our tests.  Press CTRL+C to exit.")
