@@ -6,6 +6,7 @@ import socket
 import struct
 from datetime import datetime
 from ctypes import c_uint32
+from netifaces import ifaddresses, AF_INET
 
 #build the necessary BPF.
 program = """
@@ -18,11 +19,11 @@ program = """
 
 BPF_PERF_OUTPUT(packets);   //outputs processed packets
 BPF_HASH(sHitList, __be32); //an array is better, but I'm not going to sit here and re-implement python's "in" operator in C.
+BPF_HASH(safeList, __be32); //a hash of IPs that should always be allowed through
 
 struct connInfo {
   int destPort;
   int sourceIP;
-  u64 debug;
 };
 
 int packetWork(struct xdp_md *ctx) {
@@ -47,10 +48,11 @@ int packetWork(struct xdp_md *ctx) {
   }
 
   //if it's ipv4 data and this guy's on the sHitList, drop his packets.
+  //but if the caller is on our safelist, continue.
   int key = ip->saddr;
   u64 *ipBanned = sHitList.lookup(&key);
-  if (ipBanned) {
-    //printk("dropping this guy"); //DEBUG
+  u64 *ipSafe = safeList.lookup(&key);
+  if (ipBanned && !ipSafe) {
     return XDP_DROP;
   }
 
@@ -70,7 +72,7 @@ int packetWork(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //assembleuseful info, but don't worry about human-readability yet
+  //assemble useful info, but don't worry about human-readability yet
   struct connInfo retVal = {};
   retVal.destPort = tcp->dest;
   retVal.sourceIP = ip->saddr;
@@ -99,11 +101,17 @@ def outputWatchLine(data):
 
 #Collects a human readable IP from a raw ip32
 def parseIP(ip):
-  #IP address comes in network byte order too, but it's 32 bit not 16 bit
+  #IP address comes in network byte order just like port, but it's 32 bit not 16 bit
   #Also we need to add all the dot notation
   ip32 = socket.ntohl(ip)
   ipBytes = struct.pack('!I', ip32)
   return socket.inet_ntoa(ipBytes)
+
+#takes a human readable IP and changes it back to raw ip32 in network byte order
+def unParseIP(ip):
+  ipBytes = socket.inet_aton(ip)
+  ip32 = struct.unpack('!I', ipBytes)[0]
+  return socket.htonl(ip32) 
 
 
 #parses data straight from xdp, spits out a callerData construct
@@ -172,11 +180,10 @@ def inspectCallers():
 def alertXDP(scanners):
   for scanner in scanners:
     print("DEBUG tattling on %s" % parseIP(scanner) )
-    b["sHitList"][c_uint32(scanner)] = c_uint32(1)
-    '''try:
+    try:
       b["sHitList"][c_uint32(scanner)] = c_uint32(1)
-    except: #figure out which exception causes a problem here...
-      print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))'''
+    except: #TODO figure out which exception causes a problem here...
+      print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))
 
 def processPacket(cpu, xdpData, size):
   #get data from XDP layer
@@ -193,7 +200,24 @@ def processPacket(cpu, xdpData, size):
   #Tattle to XDP layer about scanners
   alertXDP(newScanners)
 
+def getSelfIPs():
+  addresses = []
+  for entry in ifaddresses(ifdev)[AF_INET]:
+    addresses.append(entry["addr"])
 
+  return addresses
+
+def safeList(hrIp):
+  print("DEBUG blanket allowing %s" % hrIp)
+  ip = unParseIP(hrIp)
+  try:
+    b["safeList"][c_uint32(ip)] = c_uint32(1)
+  except:
+    print("Could not safelist %s! Consider stopping the program in case your connection gets blacklisted!" % hrIp)
+
+
+for ip in getSelfIPs():
+  safeList(ip)
 
 print("%-18s %-16s %-6s" % ("TIME", "IP", "PORT"))
 try: #if we fail, remove from xdp cuz like be safe okay
