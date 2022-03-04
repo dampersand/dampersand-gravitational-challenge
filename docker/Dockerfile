@@ -10,7 +10,7 @@ RUN pip install netifaces prometheus-client
 
 RUN mkdir /app
 WORKDIR /app
-COPY src/main.py ./
+COPY src/ ./
 RUN chmod +x main.py
 
 ENTRYPOINT ["/usr/bin/python3"]

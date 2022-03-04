@@ -5,16 +5,16 @@
 #include <uapi/linux/tcp.h>
 #include <uapi/linux/in.h>
 
-BPF_PERF_OUTPUT(packets);   //outputs processed packets
-BPF_HASH(sHitList, __be32); //an array is better, but I'm not going to sit here and re-implement python's "in" operator in C.
-BPF_HASH(safeList, __be32); //a hash of IPs that should always be allowed through
+BPF_PERF_OUTPUT(callers);   //outputs caller information
+BPF_HASH(blacklist, __be32); //an array is better, but I'm not going to sit here and re-implement python's "in" operator in C.
+BPF_HASH(whitelist, __be32); //a hash of IPs that should always be allowed through
 
 struct connInfo {
   int destPort;
   int sourceIP;
 };
 
-int packetWork(struct xdp_md *ctx) {
+int packetwatch(struct xdp_md *ctx) {
   //NOTE: xdp_md is a struct OF MEMORY ADDRESSES, NOT OF THE ACTUAL DATA.  Remember this when you're tearing your hair out.
   //data      = the memory address that starts the xdp data
   //data_end  = the memory address at the end of the edp data
@@ -51,11 +51,11 @@ int packetWork(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //if this guy's on the sHitList, drop his packets.
-  //but if the caller is on our safelist, continue.
+  //if this guy's on the black list, drop his conn.
+  //but if the caller is on our whitelist, continue.
   int key = ip->saddr;
-  u64 *ipBanned = sHitList.lookup(&key);
-  u64 *ipSafe = safeList.lookup(&key);
+  u64 *ipBanned = blacklist.lookup(&key);
+  u64 *ipSafe = whitelist.lookup(&key);
   if (ipBanned && !ipSafe) {
     return XDP_DROP;
   }
@@ -66,6 +66,6 @@ int packetWork(struct xdp_md *ctx) {
   retVal.sourceIP = ip->saddr;
 
   //send it home
-  packets.perf_submit(ctx, &retVal, sizeof(retVal));
+  callers.perf_submit(ctx, &retVal, sizeof(retVal));
   return XDP_PASS;
 }

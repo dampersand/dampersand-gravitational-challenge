@@ -32,3 +32,4 @@ def getSelfIPs(ifdev):
     addresses.append(entry["addr"])
 
   return addresses
+  
