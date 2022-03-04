@@ -1,0 +1,20 @@
+server {
+        listen 8086 default_server;
+        root /var/www/html;
+        index index.html;
+        server_name localhost;
+}
+
+server {
+        listen 8087 default_server;
+        root /var/www/html;
+        index index.html;
+        server_name localhost;
+}
+
+server {
+        listen 8088 default_server;
+        root /var/www/html;
+        index index.html;
+        server_name localhost;
+}

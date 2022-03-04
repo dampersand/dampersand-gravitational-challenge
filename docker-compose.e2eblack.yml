@@ -1,0 +1,11 @@
+services:
+  packetwatch:
+    environment:
+      PW_PORTSCAN_TIME_THRESHOLD: 1
+      PW_IFDEV: lo
+      PW_WHITELIST_SELF: "False"
+
+  #This container is for unit testing and sending test packets
+  tester:
+    command: ["/usr/bin/python3", "e2e_blacklist.py"] #only use a single process for e2e, because they're order-dependent.
+                             
