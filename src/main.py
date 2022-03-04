@@ -95,7 +95,7 @@ callers = {} #list of folks who have called the network stack
 sHitList = [] #scanner hit list, list of source IPs caught port-scanning
 b = BPF(text=program) #TODO consider importing from  a file instead
 b.attach_xdp(ifdev, b.load_func("packetWork", BPF.XDP)) #get to work
-connCount = Counter('connCount', 'number of new connections')
+connCount = Counter('conn_count', 'number of new connections')
 start_http_server(PROMETHEUS_PORT)
 
 
