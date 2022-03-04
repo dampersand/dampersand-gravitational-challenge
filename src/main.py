@@ -48,15 +48,6 @@ int packetWork(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //if it's ipv4 data and this guy's on the sHitList, drop his packets.
-  //but if the caller is on our safelist, continue.
-  int key = ip->saddr;
-  u64 *ipBanned = sHitList.lookup(&key);
-  u64 *ipSafe = safeList.lookup(&key);
-  if (ipBanned && !ipSafe) {
-    return XDP_DROP;
-  }
-
   //for now, let's scope down into TCP only.
   if (ip->protocol != IPPROTO_TCP) {
     return XDP_PASS;
@@ -71,6 +62,15 @@ int packetWork(struct xdp_md *ctx) {
   //now we're in business!  We have some tcp data.  Let's ONLY continue on 'syn' (not syn-ack) packets.
   if (!(tcp->syn) || (tcp->ack)) {
     return XDP_PASS;
+  }
+
+  //if this guy's on the sHitList, drop his packets.
+  //but if the caller is on our safelist, continue.
+  int key = ip->saddr;
+  u64 *ipBanned = sHitList.lookup(&key);
+  u64 *ipSafe = safeList.lookup(&key);
+  if (ipBanned && !ipSafe) {
+    return XDP_DROP;
   }
 
   //assemble useful info, but don't worry about human-readability yet
