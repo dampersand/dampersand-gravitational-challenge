@@ -52,28 +52,35 @@ class bpfBuddy:
     else:
       self.callers[caller["ip"]].append({"time": caller["time"], "port": caller["port"]})
 
-  #cleans up the caller list - removes any call records older than timeThresh, detects and deletes scanners.
+  #cleans up the caller list - removes any call records older than timeThresh, removes any whitelisted IPs, detects and deletes scanners.
   #returns a list of the scanners found.
   def cleanCallers(self):
     now = datetime.now()
     newScanners = []
+    whiteListers = []
     for ip in self.callers:
       portsHit = [] #ports that a caller has hit in the last minute
       removeElements = [] #old call records to be removed
 
+      #If this caller is whitelisted, make a note to remove their calls from the DB and move to the next caller
+      if ip in self.whitelist:
+        whiteListers.append(ip)
+        continue
+
+
       #Check each of a caller's calls, see if they've been a bit scan-happy
       for i, call in enumerate(self.callers[ip]):
+        #Make a note to remove any calls older than timeThresh
         if (now - call["time"]).seconds > self.timeThresh:
           removeElements.append(i)
-        else:
+        #compile a list of ports that the caller hit within timeThresh
+        else: 
           portsHit.append(call["port"])
 
-      if len(set(portsHit)) >= self.portThresh: #scanner detected #TODO: don't flag our own IPs as scanners
-        self.blacklist.append(ip)
-        self.blacklist = list(set(self.blacklist))
+      if len(set(portsHit)) >= self.portThresh: #scanner detected, make a note
         newScanners.append(ip)
 
-      else: #not a scanner, remove old call records from largest index to smallest
+      else: #not a scanner.  Go ahead and remove their old call records.
         removeElements.sort(reverse=True)
         for i in removeElements:
           self.callers[ip].pop(i)
@@ -82,11 +89,17 @@ class bpfBuddy:
     for ip in newScanners:
       self.callers.pop(ip, False)
 
+    #If someone was on the whitelist, stop storing their data
+    for ip in whiteListers:
+      self.callers.pop(ip, False)
+
     return newScanners
 
-  #blacklists an ip
+  #blacklists an IP
   #expects to receive an ip32
   def forceBlacklist(self, ip):
+    self.blacklist.append(ip)
+    self.blacklist = list(set(self.blacklist))
     outputColumns(datetime.now().strftime("%H:%M:%S"), ip32ToHR(ip), "", "Added to blacklist")
     try:
       self.bpf["blacklist"][c_uint32(ip)] = c_uint32(1)
@@ -96,6 +109,8 @@ class bpfBuddy:
   #whitelists an IP
   #expects to receive an ip32
   def forceWhitelist(self, ip):
+    self.whitelist.append(ip)
+    self.whitelist = list(set(self.whitelist))
     outputColumns(datetime.now().strftime("%H:%M:%S"), ip32ToHR(ip), "", "Added to whitelist")
     try:
       self.bpf["whitelist"][c_uint32(ip)] = c_uint32(1)

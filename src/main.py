@@ -1,7 +1,7 @@
 from prometheus_client import start_http_server
 from os import getenv
 from bpfBuddy import bpfBuddy
-from pwHelpers import getSelfIPs, ipHRTo32
+from pwHelpers import getSelfIPs, ipHRTo32, outputColumns
 
 #constants
 PORTSCAN_TIME_THRESHOLD = getenv('PW_PORTSCAN_TIME_THRESHOLD', 60) 
@@ -15,12 +15,12 @@ start_http_server(PROMETHEUS_PORT)
 #instantiate bpf interface
 interface = bpfBuddy("bpf/packetwatch.c", PORTSCAN_PORT_THRESHOLD, PORTSCAN_TIME_THRESHOLD, IFDEV)
 
+#Put up some pretty columns
+outputColumns("TIME", "IP", "PORT", "MESSAGE")
+
 #whitelist ourselves!
 for ip in getSelfIPs(IFDEV):
   interface.forceWhitelist(ipHRTo32(ip))
-
-#Put up some pretty columns
-outputColumns("TIME", "IP", "PORT", "MESSAGE")
 
 #And get to work!
 interface.load()
