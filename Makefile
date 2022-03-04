@@ -29,8 +29,11 @@ exec-test:  ## Step into the tester container
 run:        ## Run packetwatch without attaching
 	@docker-compose run --rm --detach packetwatch
 
-run-log:    ## Run packetwatch, but attach and watch logs
+run-log:    ## Run packetwatch, attach and watch logs
 	@docker-compose run --rm packetwatch
 
-run-test:   ## Run tester, attach and watch logs
+unit-test:  ## Run tester, attach and watch logs
 	@docker-compose run --rm tester
+
+e2e:        ## Run e2e tests on tester
+	@docker-compose up --rm -f docker-compose.yml -f docker-compose.e2e.yml

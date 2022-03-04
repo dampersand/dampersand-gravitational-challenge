@@ -8,6 +8,7 @@ PORTSCAN_TIME_THRESHOLD = getenv('PW_PORTSCAN_TIME_THRESHOLD', 60)
 PORTSCAN_PORT_THRESHOLD = getenv('PW_PORTSCAN_PORT_THRESHOLD', 3) #Hit PORTSCAN_PORT_THRESHOLD ports within PORTSCAN_TIME_THRESHOLD and you're now a scanner
 PROMETHEUS_PORT         = getenv('PW_PROMETHEUS_PORT', 9090)
 IFDEV                   = getenv('PW_IFDEV', "lo")
+WHITELIST_SELF          = getenv('PW_WHITELIST_SELF', 'True').lower() in ('true', '1') #sneaky trick, yes?
 
 #prometheus setup
 start_http_server(PROMETHEUS_PORT)
@@ -19,8 +20,9 @@ interface = bpfBuddy("bpf/packetwatch.c", PORTSCAN_PORT_THRESHOLD, PORTSCAN_TIME
 outputColumns("TIME", "IP", "PORT", "MESSAGE")
 
 #whitelist ourselves!
-for ip in getSelfIPs(IFDEV):
-  interface.forceWhitelist(ipHRTo32(ip))
+if WHITELIST_SELF:
+  for ip in getSelfIPs(IFDEV):
+    interface.forceWhitelist(ipHRTo32(ip))
 
 #And get to work!
 interface.load()

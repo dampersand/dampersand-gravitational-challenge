@@ -12,6 +12,7 @@ services:
     privileged: true                            #I hate this a lot.  Explore a way around this if you have time.
 
 
+  #This container is for unit testing and sending test packets
   tester:
     build:
       context: .
