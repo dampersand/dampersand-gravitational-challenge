@@ -6,10 +6,7 @@ LABEL maintainer="danputnam1@gmail.com"
 RUN apt-get update
 RUN apt-get install -y kmod python3-pip bpfcc-tools
 
-#TODO - do I need bpftrace?
-
-#fyi - this pip package is... unruly.  Doesn't appear to work on Debian, or on python:3.10.  We're gonna take the concession to ubuntu here.
-#RUN pip install bcc
+RUN pip install netifaces
 
 RUN mkdir /app
 WORKDIR /app
