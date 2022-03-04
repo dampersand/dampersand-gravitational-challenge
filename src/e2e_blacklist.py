@@ -1,13 +1,6 @@
-import unittest
-import requests
-from time import sleep
+import subprocess
 
-class TestE2E(unittest.TestCase):
-
-  def race_condition(self):
-    "look, i'm lazy.  I have no idea if packetwatch is going to come up and be live before tester, so let's just give it 5s"
-    sleep(5)
-    self.assertTrue(True)
+class e2eTests(unittest.TestCase):
 
   def test_nginx_up(self):
     "local nginx server is up on the tester image and should return 'pong'"
@@ -46,3 +39,15 @@ class TestE2E(unittest.TestCase):
       self.assertTrue(False)
     except requests.exceptions.Timeout:
       self.assertTrue(True)
+
+
+
+#turn nginx on.  Yes, it is a race condition, I know, I know.
+subprocess.call('service nginx start', shell=True)
+sleep(5)
+
+tester=e2eTests()
+tester.test_nginx_up()
+tester.test_packetwatch_allow()
+tester.test_packetwatch_singleport_allow()
+tester.test_packetwatch_deny()

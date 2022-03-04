@@ -7,5 +7,5 @@ services:
 
   #This container is for unit testing and sending test packets
   tester:
-    command: ["green", "test_e2e_blacklist.py"]
+    command: ["/usr/bin/python3", "e2e_blacklist.py"] #only use a single process for e2e, because they're order-dependent.
                              
