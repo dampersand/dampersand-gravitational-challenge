@@ -21,4 +21,5 @@ for ip in getSelfIPs(IFDEV):
 
 #TODO: this should be an output helper
 print("%-18s %-16s %-6s" % ("TIME", "IP", "PORT")) #TODO: print this using output helper
+interface.load()
 interface.listen()

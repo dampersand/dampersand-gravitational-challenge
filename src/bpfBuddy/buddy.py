@@ -44,7 +44,7 @@ class bpfBuddy:
 
   #records a caller into our caller dict
   def recordCaller(self, caller):
-    if caller["ip"] not in callers:
+    if caller["ip"] not in self.callers:
       self.callers[caller["ip"]] = [{"time": caller["time"], "port": caller["port"]}]
 
     else:
@@ -94,9 +94,9 @@ class bpfBuddy:
   #whitelists an IP
   #expects to receive an ip32
   def forceWhitelist(self, ip):
-    print("DEBUG tattling on %s" % ip32ToHR(ip))
+    print("DEBUG whitelisting %s" % ip32ToHR(ip))
     try:
-      self.bpf["blacklist"][c_uint32(ip)] = c_uint32(1)
+      self.bpf["whitelist"][c_uint32(ip)] = c_uint32(1)
     except:
       print("Tried, but could not whitelist IP: %s" % ip32ToHR(ip))
 
@@ -107,7 +107,7 @@ class bpfBuddy:
 
     #parse and output data
     callerData = self.parseCallerData(data)
-    #outputHelper(callerData) #TODO gotta hook this in now
+    outputHelper(callerData)
 
     #record callers and drop anything older than 1 min, get any new scanners
     self.recordCaller(callerData)
