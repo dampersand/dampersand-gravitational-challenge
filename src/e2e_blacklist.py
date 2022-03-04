@@ -41,7 +41,7 @@ class e2eTests(unittest.TestCase):
     try:
       r = requests.get("http://localhost:8086", timeout=4)
       self.assertTrue(False)
-    except requests.exceptions.Timeout:
+    except:
       self.assertTrue(True)
 
 

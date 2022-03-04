@@ -4,9 +4,9 @@ from bpfBuddy import bpfBuddy
 from pwHelpers import getSelfIPs, ipHRTo32, outputColumns
 
 #constants
-PORTSCAN_TIME_THRESHOLD = getenv('PW_PORTSCAN_TIME_THRESHOLD', 60) 
-PORTSCAN_PORT_THRESHOLD = getenv('PW_PORTSCAN_PORT_THRESHOLD', 3) #Hit PORTSCAN_PORT_THRESHOLD ports within PORTSCAN_TIME_THRESHOLD and you're now a scanner
-PROMETHEUS_PORT         = getenv('PW_PROMETHEUS_PORT', 9090)
+PORTSCAN_TIME_THRESHOLD = int(getenv('PW_PORTSCAN_TIME_THRESHOLD', 60))
+PORTSCAN_PORT_THRESHOLD = int(getenv('PW_PORTSCAN_PORT_THRESHOLD', 3)) #Hit PORTSCAN_PORT_THRESHOLD ports within PORTSCAN_TIME_THRESHOLD and you're now a scanner
+PROMETHEUS_PORT         = int(getenv('PW_PROMETHEUS_PORT', 9090))
 IFDEV                   = getenv('PW_IFDEV', "lo")
 WHITELIST_SELF          = getenv('PW_WHITELIST_SELF', 'True').lower() in ('true', '1') #sneaky trick, yes?
 
