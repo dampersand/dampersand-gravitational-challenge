@@ -38,4 +38,4 @@ e2e:        ## Run e2e tests on tester
 
 clean:      ## Remove all instances of packetwatch and tester from your machine (including images)
 	@docker-compose down --rmi all
-	
+	@echo 'Just a friendly reminder, when is the last time you ran `docker prune` and `docker container prune`?'

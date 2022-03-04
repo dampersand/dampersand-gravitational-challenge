@@ -21,7 +21,16 @@ start_http_server(PROMETHEUS_PORT)
 #instantiate bpf interface
 interface = bpfBuddy("bpf/packetwatch.c", PORTSCAN_PORT_THRESHOLD, PORTSCAN_TIME_THRESHOLD, IFDEV)
 
-#Put up some pretty columns
+#Greet the user and put up pretty columns
+logging.info("Welcome to Packetwatch!")
+logging.info("We will be logging all incoming connections on %s" % IFDEV)
+logging.info("Any source IPs that hit %s different ports within %s second(s) will have their future connection attempts dropped!" % (PORTSCAN_PORT_THRESHOLD, PORTSCAN_TIME_THRESHOLD))
+whitelistInfo = False
+if WHITELIST_SELF:
+  whitelistInfo = ("", IFDEV, "!")
+else:
+  whitelistInfo = (" NOT", IFDEV, ", so play nice!")
+logging.info("We will%s whitelist any incoming connections originating from our own IPs on %s%s" % whitelistInfo)
 outputColumns("TIME", "IP", "PORT", "MESSAGE")
 
 #whitelist ourselves!
