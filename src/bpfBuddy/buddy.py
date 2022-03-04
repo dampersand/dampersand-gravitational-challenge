@@ -144,3 +144,4 @@ class bpfBuddy:
 
     except:
       self.bpf.remove_xdp(self.ifdev)
+      print("Thank you for playing Wing Commander!")

@@ -58,23 +58,23 @@ tester=e2eTests()
 try:
   logging.info("Checking to make sure nginx is up!")
   tester.test_nginx_up()
-  logging.info("Success!")
+  logging.info("SUCCESS")
 except AssertionError:
-  logging.info("nginx is not up!  This will skew future tests.")
+  logging.info("FAIL nginx is not up!  This will skew future tests.")
 
 try:
   logging.info("Performing a slow portscan, packetwatch should allow this.  Be sure PW_PORTSCAN_TIME_THRESHOLD is 1 second or less.")
   tester.test_slow_portscan()
-  logging.info("Success!")
+  logging.info("SUCCESS")
 except AssertionError:
-  logging.info("Couldn't reach nginx server!  It may be down, or packetwatch may not be expiring calls correctly.")
+  logging.info("FAIL Couldn't reach nginx server!  It may be down, or packetwatch may not be expiring calls correctly.")
 
 try:
   logging.info("Performing hammer test, faster than packetwatch's threshold but with fewer ports than PW_PORTSCAN_PORT_THRESHOLD.")
   tester.test_packetwatch_singleport_allow()
-  logging.info("Success!")
+  logging.info("SUCCESS")
 except AssertionError:
-  logging.info("Couldn't reach nginx server!  It may be down, or packetwatch may not be honoring port thresholds correctly.")
+  logging.info("FAIL Couldn't reach nginx server!  It may be down, or packetwatch may not be honoring port thresholds correctly.")
 
 logging.info("Sleeping for a second so we don't accidentally irritate packetwatch")
 sleep(2)
@@ -82,8 +82,8 @@ sleep(2)
 try:
   logging.info("Performing packetwatch filter test.  Packetwatch should flag me as a portscanner and prevent nginx access.")
   tester.test_packetwatch_deny()
-  logging.info("Success, I'm blocked!!")
+  logging.info("SUCCESS I'm blocked!!")
 except AssertionError:
-  logging.info("Was able to reach nginx server!  That's bad, we should have been blocked.  is packetwatch running?")
+  logging.info("FAIL I was able to reach nginx server!  That's bad, we should have been blocked.  is packetwatch running?")
 
 logging.info("Thus ends our tests.  Press CTRL+C to exit.")

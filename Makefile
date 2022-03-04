@@ -33,8 +33,11 @@ run-log:    ## Run packetwatch, attach and watch logs
 unit-test:  ## Run tester, attach and watch logs
 	@docker-compose run --rm tester
 
-e2e:        ## Run e2e tests on tester
-	@docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up
+e2e-black:  ## Run e2e tests on tester with whitelists disabled
+	@docker-compose -f docker-compose.yml -f docker-compose.e2eblack.yml up
+
+e2e-white:  ## Run e2e tests with whitelist enabled
+	@docker-compose -f docker-compose.yml -f docker-compose.e2ewhite.yml -e PW_WHITELIST_SELF="True" up
 
 clean:      ## Remove all instances of packetwatch and tester from your machine (including images)
 	@docker-compose down --rmi all

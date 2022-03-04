@@ -40,4 +40,7 @@ if WHITELIST_SELF:
 
 #And get to work!
 interface.load()
-interface.listen()
+try:
+  interface.listen()
+except:
+  print("Thank you for playing Wing Commander!")
