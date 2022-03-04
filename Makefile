@@ -10,14 +10,14 @@ help:   ## Print this help
 	@echo 'Targets:'
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
-build:  ## Build packetwatch
+build:  		## Build packetwatch
 	@docker-compose build packetwatch
 
-run:    ## Run packetwatch without attaching
+exec:   		## Step into the packetwatch container
+	@docker-compose run packetwatch /bin/bash
+
+run:    		## Run packetwatch without attaching
 	@docker-compose up
 
-run-log:    ## Run packetwatch, but attach and watch logs
+run-log:		## Run packetwatch, but attach and watch logs
 	@docker-compose run packetwatch
-
-exec:   ## Step into the packetwatch container
-	@docker-compose run packetwatch /bin/bash

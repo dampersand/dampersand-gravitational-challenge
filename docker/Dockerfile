@@ -1,5 +1,5 @@
+#FROM ubuntu:22.04 as packetwatch
 FROM ubuntu:22.04
-
 LABEL repository="https://github.com/dampersand/dputnam-gravitational-challenge"
 LABEL maintainer="danputnam1@gmail.com"
 
@@ -15,3 +15,12 @@ RUN chmod +x main.py
 
 #entrypoints suck with docker-compose
 CMD ["/usr/bin/python3", "main.py"]
+
+
+# ####
+# #Test Image
+# #This image is basically packetwatch, but with some extra test utilities.
+# ####
+
+# FROM packetwatch as tester
+# RUN pip install green
