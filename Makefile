@@ -16,14 +16,15 @@ build-app:  ## Build packetwatch
 build-test: ## Build tester image
 	@docker-compose build tester
 
-build-all: build-test build-app 
+build-all: build-app build-test
 build-all:  ## Build both images
+	@echo
 
 exec-app:   ## Step into the packetwatch container
 	@docker-compose run --rm packetwatch /bin/bash
 
 exec-test:  ## Step into the tester container
-	@docker-compose run --rm packetwatch /bin/bash
+	@docker-compose run --rm tester /bin/bash
 
 run:        ## Run packetwatch without attaching
 	@docker-compose run --rm --detach packetwatch
