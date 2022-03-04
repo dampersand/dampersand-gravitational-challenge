@@ -1,6 +1,3 @@
-#!/bin/env python3
-#TODO ^get rid of that and put it in the dockerfile instead
-
 from bcc import BPF
 import socket
 import struct
