@@ -6,7 +6,7 @@ LABEL maintainer="danputnam1@gmail.com"
 RUN apt-get update
 RUN apt-get install -y kmod python3-pip bpfcc-tools
 
-RUN pip install netifaces
+RUN pip install netifaces prometheus-client
 
 RUN mkdir /app
 WORKDIR /app

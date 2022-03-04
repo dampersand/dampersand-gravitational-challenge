@@ -7,6 +7,7 @@ import struct
 from datetime import datetime
 from ctypes import c_uint32
 from netifaces import ifaddresses, AF_INET
+from prometheus_client import start_http_server, Counter
 
 #build the necessary BPF.
 program = """
@@ -87,12 +88,16 @@ int packetWork(struct xdp_md *ctx) {
 #Hit PORTSCAN_PORT_THRESHOLD ports within PORTSCAN_TIME_THRESHOLD and you're now a scanner
 PORTSCAN_TIME_THRESHOLD = 60 #constant, threshold (in seconds) above which someone is considered port scanning
 PORTSCAN_PORT_THRESHOLD = 3  #constant, threshold (in ports) above which someone is considered port scanning
+PROMETHEUS_PORT         = 9090
 
 ifdev = "lo" #global device to listen on #TODO pass device
 callers = {} #list of folks who have called the network stack
 sHitList = [] #scanner hit list, list of source IPs caught port-scanning
 b = BPF(text=program) #TODO consider importing from  a file instead
 b.attach_xdp(ifdev, b.load_func("packetWork", BPF.XDP)) #get to work
+connCount = Counter('conn_count', 'number of new connections')
+start_http_server(PROMETHEUS_PORT)
+
 
 
 #Spit out the output in a human readable format
@@ -186,8 +191,9 @@ def alertXDP(scanners):
       print("Could not blacklist scanner!  Scanner IP: %s" % parseIP(scanner))
 
 def processPacket(cpu, xdpData, size):
-  #get data from XDP layer
+  #get data from XDP layer and tick the prometheus counter
   data = b["packets"].event(xdpData)
+  connCount.inc()
 
   #parse and output data
   callerData = parseCallerData(data)
