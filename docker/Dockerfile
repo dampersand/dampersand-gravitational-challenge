@@ -13,5 +13,5 @@ WORKDIR /app
 COPY src/ ./
 RUN chmod +x main.py
 
-ENTRYPOINT ["/usr/bin/python3"]
-CMD ["main.py"]
+#entrypoints suck with docker-compose
+CMD ["/usr/bin/python3", "main.py"]

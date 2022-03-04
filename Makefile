@@ -13,5 +13,11 @@ help:   ## Print this help
 build:  ## Build packetwatch
 	@docker-compose build packetwatch
 
-run:    ## Run packetwatch
+run:    ## Run packetwatch without attaching
+	@docker-compose up
+
+run-log:    ## Run packetwatch, but attach and watch logs
 	@docker-compose run packetwatch
+
+exec:   ## Step into the packetwatch container
+	@docker-compose run packetwatch /bin/bash
