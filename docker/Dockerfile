@@ -33,4 +33,4 @@ COPY nginx/index.html /var/www/html/index.html
 RUN pip install green requests
 
 #Run unit tests only by default
-CMD ["green" "test_helpers.py"]
+CMD ["/usr/local/bin/green"]
