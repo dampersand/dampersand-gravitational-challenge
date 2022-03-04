@@ -12,3 +12,6 @@ RUN mkdir /app
 WORKDIR /app
 COPY src/main.py ./
 RUN chmod +x main.py
+
+ENTRYPOINT ["/usr/bin/python3"]
+CMD ["main.py"]
