@@ -37,7 +37,7 @@ e2e-black:  ## Run e2e tests on tester with whitelists disabled
 	@docker-compose -f docker-compose.yml -f docker-compose.e2eblack.yml up
 
 e2e-white:  ## Run e2e tests with whitelist enabled
-	@docker-compose -f docker-compose.yml -f docker-compose.e2ewhite.yml -e PW_WHITELIST_SELF="True" up
+	@docker-compose -f docker-compose.yml -f docker-compose.e2ewhite.yml up
 
 clean:      ## Remove all instances of packetwatch and tester from your machine (including images)
 	@docker-compose down --rmi all
