@@ -47,16 +47,12 @@ int packetWork(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  //if it's ipv4 data and this guy's on the safeList, pass his packets.
-  int key = ip->saddr;
-  u64 *ipSafe = safeList.lookup(&key);
-  if (ipSafe) {
-    return XDP_PASS;
-  }
-
   //if it's ipv4 data and this guy's on the sHitList, drop his packets.
+  //but if the caller is on our safelist, continue.
+  int key = ip->saddr;
   u64 *ipBanned = sHitList.lookup(&key);
-  if (ipBanned) {
+  u64 *ipSafe = safeList.lookup(&key);
+  if (ipBanned && !ipSafe) {
     return XDP_DROP;
   }
 
