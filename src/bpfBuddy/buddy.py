@@ -1,4 +1,4 @@
-from src.pwHelpers import *
+from pwHelpers import *
 from datetime import datetime
 from bcc import BPF
 from ctypes import c_uint32
@@ -84,7 +84,7 @@ class bpfBuddy:
 
   #blacklists an ip
   #expects to receive an ip32
-  def blacklist(self, ip):
+  def forceBlacklist(self, ip):
     print("DEBUG tattling on %s" % ip32ToHR(ip) )
     try:
       self.bpf["blacklist"][c_uint32(ip)] = c_uint32(1)
@@ -93,8 +93,8 @@ class bpfBuddy:
 
   #whitelists an IP
   #expects to receive an ip32
-  def whitelist(self, ip):
-    print("DEBUG tattling on %s" % ip32ToHR(ip) )
+  def forceWhitelist(self, ip):
+    print("DEBUG tattling on %s" % ip32ToHR(ip))
     try:
       self.bpf["blacklist"][c_uint32(ip)] = c_uint32(1)
     except:
@@ -115,7 +115,7 @@ class bpfBuddy:
 
     #blacklist all the scanners
     for scanner in newScanners:
-      self.blacklist(scanner)
+      self.forceBlacklist(scanner)
 
   #This function blocks.  Start polling our xdp interface for new packets or whatever
   #Call the process function on each new packet
@@ -127,4 +127,3 @@ class bpfBuddy:
 
     except:
       self.bpf.remove_xdp(self.ifdev)
-      
