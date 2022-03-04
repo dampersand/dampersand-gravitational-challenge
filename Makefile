@@ -3,21 +3,33 @@
 
 all: build run
 
-help:   ## Print this help
+help:       ## Print this help
 	@echo 'Usage: make <target>'
 	@echo 'Setup or run the Packetwatch tool'
 	@echo
 	@echo 'Targets:'
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
 
-build:  		## Build packetwatch
+build-app:  ## Build packetwatch
 	@docker-compose build packetwatch
 
-exec:   		## Step into the packetwatch container
-	@docker-compose run packetwatch /bin/bash
+build-test: ## Build tester image
+	@docker-compose build tester
 
-run:    		## Run packetwatch without attaching
-	@docker-compose up
+build-all: build-test build-app 
+build-all:  ## Build both images
 
-run-log:		## Run packetwatch, but attach and watch logs
-	@docker-compose run packetwatch
+exec-app:   ## Step into the packetwatch container
+	@docker-compose run --rm packetwatch /bin/bash
+
+exec-test:  ## Step into the tester container
+	@docker-compose run --rm packetwatch /bin/bash
+
+run:        ## Run packetwatch without attaching
+	@docker-compose run --rm --detach packetwatch
+
+run-log:    ## Run packetwatch, but attach and watch logs
+	@docker-compose run --rm packetwatch
+
+run-test:   ## Run tester, attach and watch logs
+	@docker-compose run --rm tester
