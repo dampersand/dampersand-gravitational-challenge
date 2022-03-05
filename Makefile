@@ -1,12 +1,35 @@
 .PHONY: help build-app build-test build-all exec-app exec-test run run-log unit-test e2e-white e2e-black clean
 .DEFAULT_GOAL:= help
 
+#Options
+#?# PW_IFDEV
+#?# 	network interface name that packetwatch will monitor (ex: eth0, eth2) (default: lo)
+#?# PW_PORTSCAN_TIME_THRESHOLD	
+#?# 	time threshold (seconds) for scanning (default: 60)
+#?# PW_PORTSCAN_PORT_THRESHOLD
+#?# 	number of ports threshold for scanning (default: 3)
+#?# 	If you scan PW_PORTSCAN_PORT_THRESHOLD ports within PW_PORTSCAN_TIME_THRESHOLD, you are flagged as a port-scanner
+#?# PW_PROMETHEUS_PORT	
+#?# 	port to serve prometheus metrics (default: 9090)
+#?# PW_WHITELIST_SELF
+#?# 	prevent IPs attached to the monitored interface from being labeled as scanners (default: True)
+
 help:       ## Print this help
-	@echo 'Usage: make <target>'
+	@echo 'Usage: make <target> [OPTION=value]'
 	@echo 'Setup or run the Packetwatch tool'
 	@echo
 	@echo 'Targets:'
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
+	@echo
+	@echo 'Options:'
+	@fgrep -h "#?#" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/#?#//'
+	@echo
+	@echo 'Example Usages:'
+	@echo 'run packetwatch in the background on eth0.  Do not blacklist connections from IP addresses associated with eth0'
+	@echo '  make run PW_IFDEV=eth0 '
+	@echo
+	@echo 'run packetwatch in the foreground on eth0.  Blacklist connections regardless of their association with eth0.  Anyone who scans 3 (default) separate ports in 10 seconds is a scanner.'
+	@echo '  make run-log PW_IFDEV=eth0 PW_WHITELIST_SELF=False PW_PORTSCAN_TIME_THRESHOLD=10'
 
 build-app:  ## Build packetwatch
 	@docker-compose build packetwatch

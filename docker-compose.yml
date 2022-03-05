@@ -3,6 +3,13 @@ services:
     build:
       context: .
       target: packetwatch
+    environment:
+      - PW_IFDEV=${PW_IFDEV}
+      - PW_PORTSCAN_TIME_THRESHOLD=${PW_PORTSCAN_TIME_THRESHOLD}
+      - PW_PORTSCAN_PORT_THRESHOLD=${PW_PORTSCAN_PORT_THRESHOLD}
+      - PW_PROMETHEUS_PORT=${PW_PROMETHEUS_PORT}
+      - PW_WHITELIST_SELF=${PW_WHITELIST_SELF}
+    #Include these volumes to automatically pass kernel headers in.
     volumes:
       - /lib/modules:/lib/modules:ro            #this way we don't have to compile or install headers on startup
       - /usr/src:/usr/src:ro                    #unnecessary for bpftrace, but allows us to #include stuff for bcc
