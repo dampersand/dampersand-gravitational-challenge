@@ -2,12 +2,12 @@
 
 <!-- MarkdownTOC -->
 
-- [Quick Start Guide](#quick-start-guide)
 - [Synopsis](#synopsis)
-- [Host Information](#host-information)
+- [Host Information/Installation](#host-informationinstallation)
   - [Host Architecture Tested](#host-architecture-tested)
   - [Host Package Dependencies](#host-package-dependencies)
   - [Other Host Dependencies](#other-host-dependencies)
+- [Quick Start Guide](#quick-start-guide)
 - [Features and Functionality](#features-and-functionality)
   - [Connection Monitoring](#connection-monitoring)
   - [New Connection Filtering](#new-connection-filtering)
@@ -27,8 +27,43 @@
 
 <!-- /MarkdownTOC -->
 
+
+# Synopsis
+Packetwatch is a dockerized network interface monitor with additional rudimentary connection-blocking capabilities.  Packetwatch is built entirely in python, and utilizes bpf loaded onto the interface with XDP to do its work - which makes it wildly lower overhead than doing the same tasks in userspace.
+
+Packetwatch should be considered a proof-of-concept level project.  It is built to specifications as part of gravitational's platform/automation challenge, https://github.com/gravitational/careers/blob/main/challenges/platform/automation.md.  As a result, the project is encapsulated in 'ready to fire' status - meaning tests, builds, and deployment are baked in as-is, with no thought to external systems that might build/test/deploy the product.
+
+Additionally, it should go without saying that Packetwatch has an extremely narrow use case. :)
+
+# Host Information/Installation
+Packetwatch is fully containerized and therefore portable, but that doesn't exactly mean it'll run on your grandmother's favorite toaster.  Here, you'll find the host architectures where Packetwatch has been tested, and any dependencies the hosts require.  Treat this like installation instructions - select an architecture from the table and install all necessary dependencies.
+
+## Host Architecture Tested
+| Platform | OS | Kernel | Results |
+|----------|----|--------|-------|
+| Bare Metal (x86_64)| Ubuntu 20.04.4 | 5.4.0-100-generic | <span style="color:green">Flawless performance</span> |
+| AWS EC2 | Ubuntu 20.04.1 | 5.11.0-1022-aws | <span style="color:orange">Generates warnings due to C macro redefinitions</span> |
+| AWS EC2 | Debian 10 20210329-591 | 4.19.0-18-cloud-amd64 | <span style="color:green">Flawless performance</span> |
+| AWS EC2 | CentOS 8 | .. | jk, rest in peace CentOS :( |
+
+## Host Package Dependencies
+|Package|Reason|Working version(s)|Other Notes|
+|-------|------|------|------|
+| make  | human interface for all actions | 4.2.1-1.2 |
+| docker-ce | provides containerization platform | 5:20.10.12~3-0~ubuntu-focal | [Installation Instructions](https://docs.docker.com/engine/install/) |
+| docker-compose | provides streamlined way to invoke build/deploy/test actions | 1.29.2 | [Installation Instructions](https://docs.docker.com/compose/install/) |
+| linux-headers | Can't do much with BPF unless the headers are available. | 5.4.0-100-generic <br />5.11.0-1022-aws <br />4.19.0-18-cloud-amd64 | easiest installation method is to use $(uname -r) (for example, on deb systems apt-get install linux-headers-$(uname -r)) |
+
+## Other Host Dependencies
+The host user running any `make` commands should be part of the `docker` group:
+```
+sudo groupadd docker
+sudo usermod -aG docker <user>
+# you should restart your shell now to pick up the changes.
+```
+
 # Quick Start Guide
-Okay, I know this is where everyone goes first, so I've put it at the top..  Follow these steps to get up and running as fast as possible!
+Follow these steps to get up and running as fast as possible!
 
 1. Be sure that your host is acceptable ([Host Information](#host-information))!  Or skip this part and just hope it is. :)
 2. Clone this repo! 
@@ -66,41 +101,6 @@ TIME               SOURCE IP        PORT   MESSAGE
 ```
 
 Great!  You're running Packetwatch!  Of course, the default settings are pretty useless.  All we are doing is monitoring the local address, and we're not even blocking any connections that come from localhost!  To make a little better use of Packetwatch, head on down to the [Usage](#usage) section to learn how to use all the settings and see some more advanced examples.
-
-
-# Synopsis
-Packetwatch is a dockerized network interface monitor with additional rudimentary connection-blocking capabilities.  Packetwatch is built entirely in python, and utilizes bpf loaded onto the interface with XDP to do its work - which makes it wildly lower overhead than doing the same tasks in userspace.
-
-Packetwatch should be considered a proof-of-concept level project.  It is built to specifications as part of gravitational's platform/automation challenge, https://github.com/gravitational/careers/blob/main/challenges/platform/automation.md.  As a result, the project is encapsulated in 'ready to fire' status - meaning tests, builds, and deployment are baked in as-is, with no thought to external systems that might build/test/deploy the product.
-
-Additionally, it should go without saying that Packetwatch has an extremely narrow use case. :)
-
-# Host Information
-Packetwatch is fully containerized and therefore portable, but that doesn't exactly mean it'll run on your grandmother's favorite toaster.  Here, you'll find the host architectures where Packetwatch has been tested, and any dependencies the hosts require.
-
-## Host Architecture Tested
-| Platform | OS | Kernel | Results |
-|----------|----|--------|-------|
-| Bare Metal (x86_64)| Ubuntu 20.04.4 | 5.4.0-100-generic | <span style="color:green">Flawless performance</span> |
-| AWS EC2 | Ubuntu 20.04.1 | 5.11.0-1022-aws | <span style="color:orange">Generates warnings due to C macro redefinitions</span> |
-| AWS EC2 | Debian 10 20210329-591 | 4.19.0-18-cloud-amd64 | <span style="color:green">Flawless performance</span> |
-| AWS EC2 | CentOS 8 | .. | jk, rest in peace CentOS :( |
-
-## Host Package Dependencies
-|Package|Reason|Working version(s)|Other Notes|
-|-------|------|------|------|
-| make  | human interface for all actions | 4.2.1-1.2 |
-| docker-ce | provides containerization platform | 5:20.10.12~3-0~ubuntu-focal | [Installation Instructions](https://docs.docker.com/engine/install/) |
-| docker-compose | provides streamlined way to invoke build/deploy/test actions | 1.29.2 | [Installation Instructions](https://docs.docker.com/compose/install/) |
-| linux-headers | Can't do much with BPF unless the headers are available. | 5.4.0-100-generic <br />5.11.0-1022-aws <br />4.19.0-18-cloud-amd64 | easiest installation method is to use $(uname -r) (for example, on deb systems apt-get install linux-headers-$(uname -r)) |
-
-## Other Host Dependencies
-The host user running any `make` commands should be part of the `docker` group:
-```
-sudo groupadd docker
-sudo usermod -aG docker <user>
-# you should restart your shell now to pick up the changes.
-```
 
 # Features and Functionality
 
