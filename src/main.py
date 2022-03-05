@@ -67,7 +67,7 @@ if ENV["WHITELIST_SELF"]:
 else:
   whitelistInfo = (" NOT", ENV["IFDEV"], ", so play nice!")
 logging.info("We will%s whitelist any incoming connections originating from our own IPs on %s%s" % whitelistInfo)
-outputColumns("TIME", "IP", "PORT", "MESSAGE")
+outputColumns("TIME", "SOURCE IP", "PORT", "MESSAGE")
 
 #whitelist ourselves!
 if ENV["WHITELIST_SELF"]:

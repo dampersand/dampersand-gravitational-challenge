@@ -3,7 +3,7 @@ LABEL repository="https://github.com/dampersand/dputnam-gravitational-challenge"
 LABEL maintainer="danputnam1@gmail.com"
 
 RUN apt-get update
-RUN apt-get install -y kmod python3-pip bpfcc-tools
+RUN apt-get install -y kmod=29-1ubuntu1 python3-pip=22.0.2+dfsg-1 bpfcc-tools=0.18.0+ds-2
 
 RUN mkdir /app
 WORKDIR /app
@@ -30,7 +30,7 @@ FROM packetwatch as tester
 RUN pip install -r requirements.test.txt
 
 #Set up nginx so we have something to curl against
-RUN apt-get install -y nginx
+RUN apt-get install -y nginx=1.18.0-6ubuntu14
 COPY nginx/default /etc/nginx/sites-available/default
 COPY nginx/index.html /var/www/html/index.html
 
