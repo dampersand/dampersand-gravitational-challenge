@@ -2,7 +2,6 @@ services:
   packetwatch:
     build:
       context: .
-      dockerfile: docker/Dockerfile
       target: packetwatch
     volumes:
       - /lib/modules:/lib/modules:ro            #this way we don't have to compile or install headers on startup
@@ -16,7 +15,6 @@ services:
   tester:
     build:
       context: .
-      dockerfile: docker/Dockerfile
       target: tester
     volumes:
       - /lib/modules:/lib/modules:ro            

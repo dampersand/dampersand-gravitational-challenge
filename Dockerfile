@@ -28,6 +28,7 @@ FROM packetwatch as tester
 RUN apt-get install -y nginx
 COPY nginx/default /etc/nginx/sites-available/default
 COPY nginx/index.html /var/www/html/index.html
+COPY testSuite/ ./
 
 #Install testing software
 RUN pip install green requests

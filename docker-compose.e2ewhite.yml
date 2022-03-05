@@ -1,6 +1,7 @@
 services:
   packetwatch:
     environment:
+      PW_IFDEV: lo
       PW_WHITELIST_SELF: "True"
 
   tester:
