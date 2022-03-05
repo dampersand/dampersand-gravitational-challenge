@@ -27,7 +27,9 @@ try:
   logging.info("Waiting 5 seconds for race condition purposes") #race condition: soooooo it's possible that packetwatch isn't up yet.  But at this point I just want quick and dirty tests, so I ain't gonna check.
   sleep(5)
 
-  #run ubiquitous tests
+  #######
+  #both-list tests go here
+  #######
   logging.info("Checking to make sure nginx is up")
   logging.info("Assumptions: None")
   logging.info("Expected Behavior: nginx should return 200 and 'pong'")
@@ -54,14 +56,18 @@ try:
   logging.info("Expected Behavior: packetwatch should not blacklist this traffic, nginx should return 200 and 'pong'")
   for i in range(3): #hit this thing four times
     canReachHttp(8086, "pong")
-    canReachHttp(8086, "pong")
-    canReachHttp(8086, "pong")
   if canReachHttp(8086, "pong"):
     logging.info("SUCCESS")
   else:
     logging.info("FAIL")
   logging.info("")
 
+
+  #######
+  #divergent tests
+  #######
+
+  #Preamble, different for each test
   if not WHITELIST:
     logging.info("Sleeping for a second so we don't accidentally irritate packetwatch") #this is kludgy.  It assumes our test has PW_PORTSCAN_TIME_THRESHOLD < 1, and prevents us from getting blacklisted by running the next test too soon after the above test.
     sleep(2)
@@ -73,11 +79,14 @@ try:
     logging.info("Assumptions: our IP address is whitelisted")
     logging.info("Expected Behavior: packetwatch should allow all of this traffic.")
 
+  #Portscan, same for each test
   try:
     portScan(3)
   except e:
     logging.warning("WARNING - unexpected %s type exception caught on portScan.  Test inconclusive, please exec in and debug" % type(e).__name__ )
 
+
+  #Check results for non-whitelist response
   if not WHITELIST:
     try:
       if canReachHttp(8086, "pong"):
@@ -87,11 +96,15 @@ try:
     except:
       logging.info("SUCCESS")
 
+  #Check results for whitelist response
   else:
     if canReachHttp(8086, "pong"):
       logging.info("SUCCESS")
     else:
       logging.info("FAIL")
+
+
+      
 except e:
   logging.error("Unhandled exception of type %s.  Recommend execing into pod to debug." % type(e).__name__ )
 

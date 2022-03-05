@@ -26,7 +26,7 @@ def canReachHttp(port, text = False):
 #Scan numPorts ports with optional sleep time between them
 #hardcode: start at port 8086 where we know nginx is listening
 def portScan(numPorts, sleepTime=0):
-  for i in range(numPorts - 1): #subtract 1 because range starts at 0
+  for i in range(numPorts):
     try:
       httpResponse(8086 + i, timeout=1)
     except:
