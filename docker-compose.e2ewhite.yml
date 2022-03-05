@@ -1,9 +1,11 @@
 services:
   packetwatch:
     environment:
+      PW_IFDEV: lo
       PW_WHITELIST_SELF: "True"
 
-  #This container is for unit testing and sending test packets
   tester:
-    command: ["/usr/bin/python3", "e2e_whitelist.py"] #only use a single process for e2e, because they're order-dependent.
+    command: ["/usr/bin/python3", "e2e.py"] #only use a single process for e2e, because they're order-dependent.
+    environment:
+      PW_WHITELIST_SELF: "True"
                              

@@ -1,6 +1,8 @@
 import unittest
 from pwHelpers import *
 
+
+#These tests will be automatically run by green, in parallel.
 class TestHelpers(unittest.TestCase):
 
   def test_ip32ToHR_answer(self):

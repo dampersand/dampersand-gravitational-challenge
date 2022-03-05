@@ -24,13 +24,16 @@ CMD ["/usr/bin/python3", "main.py"]
 
 FROM packetwatch as tester
 
+#Install testing software
+RUN pip install green requests
+
 #Set up nginx so we have something to curl against
 RUN apt-get install -y nginx
 COPY nginx/default /etc/nginx/sites-available/default
 COPY nginx/index.html /var/www/html/index.html
 
-#Install testing software
-RUN pip install green requests
+#Bring in our test suite
+COPY testSuite/ ./
 
 #Run unit tests only by default
 CMD ["/usr/local/bin/green"]
