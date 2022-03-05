@@ -37,9 +37,9 @@ for key in ENV:
 if type(ENV['WHITELIST_SELF']) != bool:
   ENV['WHITELIST_SELF'] = ENV['WHITELIST_SELF'].lower() in ('true', '1') #sneaky trick, yes?
 
-#Now typecast everything.
+#Now typecast everything.  yea double assignment we doin' it
 for key in ENV:
-  type(ENVDEFAULT[key])(ENV[key])
+  ENV[key] = type(ENVDEFAULT[key])(ENV[key])
 
 
 
