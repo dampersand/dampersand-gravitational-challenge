@@ -1,5 +1,0 @@
-Check the dockerfile.
-
-This folder is unpacked into the /app directory for tester use only
-
-This way we don't have to rebuild early layers for changes to test.
