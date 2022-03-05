@@ -1,4 +1,4 @@
-.PHONY: help build-app build-test build-all exec-app exec-test run run-log unit-test e2e-white e2e-black clean
+.PHONY: help build-app build-test build-all exec-app exec-test run run-log unit-test e2e-white e2e-black stop clean
 .DEFAULT_GOAL:= help
 
 #Options
@@ -47,7 +47,7 @@ exec-app:   ## Step into the packetwatch container for debug
 exec-test:  ## Step into the tester container for debug
 	@docker-compose run --rm tester /bin/bash
 
-run:        ## Run packetwatch in the background
+run:        ## Run packetwatch in the background.
 	@docker-compose run --rm --detach packetwatch
 
 run-log:    ## Run packetwatch, attach and watch logs
@@ -61,6 +61,9 @@ e2e-black:  ## Run e2e tests without whitelisting self (test portscan detection)
 
 e2e-white:  ## Run e2e tests but whitelist self (test whitelist capability, but not portscan detection)
 	@docker-compose -f docker-compose.yml -f docker-compose.e2ewhite.yml up
+
+stop:				## Stop any instances of packetwatch or tester.
+	@docker-compose down
 
 clean:      ## Remove all instances of packetwatch and tester from your machine (including images)
 	@docker-compose down --rmi all
