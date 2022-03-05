@@ -6,7 +6,13 @@ from sys import stdout
 from time import sleep
 
 #detect test type and set up logs
-WHITELIST = getenv('PW_WHITELIST_SELF', 'False').lower() in ('true', '1') #defaults to non-whitelist testing
+#Gotta do it manually because os.getenv doesn't treat empty strings as "None"
+WHITELIST = getenv('PW_WHITELIST_SELF') #defaults to non-whitelist testing
+if WHITELIST == '':
+  WHITELIST = 'False'
+
+WHITELIST = WHITELIST.lower() in ('true', '1')
+
 logging.basicConfig(stream = stdout, level=logging.INFO, format="%(message)s")
 
 #Intro
