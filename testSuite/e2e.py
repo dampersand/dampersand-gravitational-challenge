@@ -82,14 +82,14 @@ try:
   #Portscan, same for each test
   try:
     portScan(3)
-  except e:
+  except Exception as e:
     logging.warning("WARNING - unexpected %s type exception caught on portScan.  Test inconclusive, please exec in and debug" % type(e).__name__ )
 
 
   #Check results for non-whitelist response
   if not WHITELIST:
     try:
-      if canReachHttp(8086, "pong"):
+      if canReachHttp(8086, "pong", timeout=5):
         logging.info("FAIL - could reach nginx")
       else:
         logging.warning("WARNING - expected an exception here, but attempting to reach to nginx did not throw one.  However, nginx did not respond correctly.  Something is likely wrong.")
@@ -105,7 +105,7 @@ try:
 
 
       
-except e:
+except Exception as e:
   logging.error("Unhandled exception of type %s.  Recommend execing into pod to debug." % type(e).__name__ )
 
 logging.info("Thus ends our tests.  Press CTRL+C to exit.")

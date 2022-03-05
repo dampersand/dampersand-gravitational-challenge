@@ -13,11 +13,11 @@ def startNginx():
   subprocess.call('service nginx start', shell=True)
 
 def httpResponse(port, **kwargs):
-  return requests.get("http://localhost:%s" % port, kwargs)
+  return requests.get("http://localhost:%s" % port, **kwargs)
 
 #tries to hit a local port using http.  Return true if the port is available and if optional expected text matches
-def canReachHttp(port, text = False):
-  r = httpResponse(port)
+def canReachHttp(port, text = False, **kwargs):
+  r = httpResponse(port, **kwargs)
   if r.status_code == 200 and ((r.text == text) or (not text)):
     return True
   else:
