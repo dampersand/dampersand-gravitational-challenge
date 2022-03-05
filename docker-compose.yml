@@ -16,9 +16,4 @@ services:
     build:
       context: .
       target: tester
-    volumes:
-      - /lib/modules:/lib/modules:ro            
-      - /usr/src:/usr/src:ro                    
-      - /sys/kernel/debug:/sys/kernel/debug:ro 
-    network_mode: "host"
-    privileged: true                            
+    network_mode: "host"                         
