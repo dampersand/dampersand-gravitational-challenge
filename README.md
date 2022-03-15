@@ -1,4 +1,16 @@
-# dputnam-gravitational-challenge: Packetwatch
+# dampersand-gravitational-challenge: Packetwatch
+
+# What is this?
+This is the result of a code challenge for an interview with Gravitational.  The challenge is preserved in its entirety for posterity reasons.
+
+If you've somehow stumbled across this and are using this challenge to apply at Gravitational yourself, please note the following feedback and make any tweaks as necessary:
+
+* PRO: The solution was easy to use
+* PRO: The callouts to assumptions and choices made to clear up ambiguity
+* PRO: [Includes] Both a unit and integration testing approach to testing
+* CON: The writing could have been more concise
+* CON: Code comments often seemed to document what, not why the code exists.
+* CON: The team detected significant scope creep in the implementation and technical discussion. While this is entirely subjective, we do believe the extensive scope you considered would be a mismatch for our team, where we are currently operating in a mode of using much more targeted considerations and tradeoffs in our projects. 
 
 <!-- MarkdownTOC -->
 
@@ -31,7 +43,7 @@
 # Synopsis
 Packetwatch is a dockerized network interface monitor with additional rudimentary connection-blocking capabilities.  Packetwatch is built entirely in python, and utilizes bpf loaded onto the interface with XDP to do its work - which makes it wildly lower overhead than doing the same tasks in userspace.
 
-Packetwatch should be considered a proof-of-concept level project.  It is built to specifications as part of gravitational's platform/automation challenge, https://github.com/gravitational/careers/blob/main/challenges/platform/automation.md.  As a result, the project is encapsulated in 'ready to fire' status - meaning tests, builds, and deployment are baked in as-is, with no thought to external systems that might build/test/deploy the product.
+Packetwatch should be considered a proof-of-concept level project.  It is built to specifications as part of gravitational's platform/automation challenge, https://github.com/gravitational/careers/blob/main/challenges/platform/automation.md , at the following point in history: https://github.com/gravitational/careers/tree/8e74b5cdd9e24e4b72e12e0303800dfa0d55fd92.  As a result, the project is encapsulated in 'ready to fire' status - meaning tests, builds, and deployment are baked in as-is, with no thought to external systems that might build/test/deploy the product.
 
 Additionally, it should go without saying that Packetwatch has an extremely narrow use case. :)
 
@@ -68,7 +80,7 @@ Follow these steps to get up and running as fast as possible!
 1. Be sure that your host is acceptable ([Host Information](#host-information))!  Or skip this part and just hope it is. :)
 2. Clone this repo! 
 ```
-git clone git@github.com:dampersand/dputnam-gravitational-challenge.git && cd dputnam-gravitational-challenge
+git clone git@github.com:dampersand/dampersand-gravitational-challenge.git && cd dampersand-gravitational-challenge
 ```
 3. Build Packetwatch: 
 ```
@@ -86,7 +98,7 @@ WARNING: The PW_PORTSCAN_TIME_THRESHOLD variable is not set. Defaulting to a bla
 WARNING: The PW_PORTSCAN_PORT_THRESHOLD variable is not set. Defaulting to a blank string.
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
 WARNING: The PW_WHITELIST_SELF variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_run ... done
+Creating dampersand-gravitational-challenge_packetwatch_run ... done
 Welcome to Packetwatch!
 We will be logging all incoming connections on lo
 Any source IPs that hit 3 different ports within 60 second(s) will have their future connection attempts dropped!
@@ -240,7 +252,7 @@ WARNING: The PW_PORTSCAN_TIME_THRESHOLD variable is not set. Defaulting to a bla
 WARNING: The PW_PORTSCAN_PORT_THRESHOLD variable is not set. Defaulting to a blank string.
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
 WARNING: The PW_WHITELIST_SELF variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_run ... done
+Creating dampersand-gravitational-challenge_packetwatch_run ... done
 Welcome to Packetwatch!
 We will be logging all incoming connections on lo
 Any source IPs that hit 3 different ports within 60 second(s) will have their future connection attempts dropped!
@@ -262,7 +274,7 @@ $ make run-log PW_IFDEV=enp0s31f6 PW_WHITELIST_SELF=False
 WARNING: The PW_PORTSCAN_TIME_THRESHOLD variable is not set. Defaulting to a blank string.
 WARNING: The PW_PORTSCAN_PORT_THRESHOLD variable is not set. Defaulting to a blank string.
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_run ... done
+Creating dampersand-gravitational-challenge_packetwatch_run ... done
 Welcome to Packetwatch!
 We will be logging all incoming connections on enp0s31f6
 Any source IPs that hit 3 different ports within 60 second(s) will have their future connection attempts dropped!
@@ -282,7 +294,7 @@ A slow scanner:
 $ make run-log PW_IFDEV=enp0s31f6 PW_PORTSCAN_TIME_THRESHOLD=5 PW_PORTSCAN_PORT_THRESHOLD=10
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
 WARNING: The PW_WHITELIST_SELF variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_run ... done
+Creating dampersand-gravitational-challenge_packetwatch_run ... done
 Welcome to Packetwatch!
 We will be logging all incoming connections on enp0s31f6
 Any source IPs that hit 10 different ports within 5 second(s) will have their future connection attempts dropped!
@@ -307,7 +319,7 @@ Vs a fast scanner:
 $ make run-log PW_IFDEV=enp0s31f6 PW_PORTSCAN_TIME_THRESHOLD=5 PW_PORTSCAN_PORT_THRESHOLD=10
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
 WARNING: The PW_WHITELIST_SELF variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_run ... done
+Creating dampersand-gravitational-challenge_packetwatch_run ... done
 Welcome to Packetwatch!
 We will be logging all incoming connections on enp0s31f6
 Any source IPs that hit 10 different ports within 5 second(s) will have their future connection attempts dropped!
@@ -337,9 +349,9 @@ WARNING: The PW_PORTSCAN_TIME_THRESHOLD variable is not set. Defaulting to a bla
 WARNING: The PW_PORTSCAN_PORT_THRESHOLD variable is not set. Defaulting to a blank string.
 WARNING: The PW_PROMETHEUS_PORT variable is not set. Defaulting to a blank string.
 WARNING: The PW_WHITELIST_SELF variable is not set. Defaulting to a blank string.
-Creating dputnam-gravitational-challenge_packetwatch_1 ... done
-Creating dputnam-gravitational-challenge_tester_1      ... done
-Attaching to dputnam-gravitational-challenge_tester_1, dputnam-gravitational-challenge_packetwatch_1
+Creating dampersand-gravitational-challenge_packetwatch_1 ... done
+Creating dampersand-gravitational-challenge_tester_1      ... done
+Attaching to dampersand-gravitational-challenge_tester_1, dampersand-gravitational-challenge_packetwatch_1
 tester_1       | Packetwatch E2E testing suite
 tester_1       | We will perform a series of tests against packetwatch over the local ifdev.
 tester_1       | Please be sure no extraneous tcp traffic is flowing over the local ifdev during this time, as that is likely to interfere with the test.
