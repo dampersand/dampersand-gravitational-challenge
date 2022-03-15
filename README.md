@@ -12,6 +12,9 @@ If you've somehow stumbled across this and are using this challenge to apply at 
 * CON: Code comments often seemed to document what, not why the code exists.
 * CON: The team detected significant scope creep in the implementation and technical discussion. While this is entirely subjective, we do believe the extensive scope you considered would be a mismatch for our team, where we are currently operating in a mode of using much more targeted considerations and tradeoffs in our projects. 
 
+If you use this and manage to get a job with them... well, send me a thank you note :')
+
+# Table of Contents
 <!-- MarkdownTOC -->
 
 - [Synopsis](#synopsis)
